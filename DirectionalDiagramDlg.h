@@ -5,6 +5,11 @@
 
 using namespace std;
 
+struct Pixel {
+	double value = 0.0;
+	int color = 0;
+};
+
 // Диалоговое окно CDirectionalDiagramDlg
 class CDirectionalDiagramDlg : public CDialogEx
 {
@@ -47,7 +52,14 @@ public:
 	double emitters_xp, emitters_yp, emitters_xmin, emitters_xmax, emitters_ymin, emitters_ymax;
 	vector<vector<int>> vec_source_radiation;
 	vector<vector<complex<double>>> vec_diagram;
+	vector<vector<Pixel>> vec_diagram_2d;
+
 	bool bTimer = false;
+
+	CWnd* Pic2dWnd;
+	CDC* Pic2dDc;
+	CRect Pic2d;
+	double diagram_2d_xp, diagram_2d_yp, diagram_2d_xmin, diagram_2d_xmax, diagram_2d_ymin, diagram_2d_ymax;
 
 	// OpenGL
 	double spin_x, spin_y, spin_z, zoom;
@@ -90,6 +102,9 @@ public:
 	double findmax(vector<vector<complex<double>>> D, bool max_min);
 
 	void DrawImage(vector<vector<int>> vec, CDC* WinDc, CRect WinxmaxGraphc);
+	vector<vector<Pixel>> calculate_color_of_image(vector<vector<Pixel>> image_vec);
+	int get_color_from_value(Pixel vec, double min_value, double max_value);
+	void draw_image(vector<vector<Pixel>> image);
 	void CreateSphere(vector<vector<double>>& sphere);
 	double rast(int x1, int y1, int z1, int x2, int y2);
 

@@ -4,6 +4,7 @@
 #include "DirectionalDiagram.h"
 #include "DirectionalDiagramDlg.h"
 #include "afxdialogex.h"
+#include <algorithm>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -13,17 +14,18 @@
 #endif
 
 #define DOTS(x,y) (emitters_xp*((x)-emitters_xmin)),(emitters_yp*((y)-emitters_ymax))
+#define DIAGRAM_2D(x,y) (diagram_2d_xp*((x)-diagram_2d_xmin)),(diagram_2d_yp*((y)-diagram_2d_ymax))
 
 using namespace std;
 
 CDirectionalDiagramDlg::CDirectionalDiagramDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DIRECTIONALDIAGRAM_DIALOG, pParent)
 	, SPHERE_RADIUS(300)
-	, SPHERE_PLATFORM_SIZE(15)
+	, SPHERE_PLATFORM_SIZE(600)
 	, EMIT_PLATFORM_SIZE(10)
 	, EMIT_DISTANCE(1)
 	, EMIT_WAVE_LENGTH(2)
-	, GRID_STEP_3D(1)
+	, GRID_STEP_3D(10)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -73,6 +75,10 @@ BOOL CDirectionalDiagramDlg::OnInitDialog()
 	PicWnd = GetDlgItem(IDC_PICTURE_ADD_EMITTER);			//связываем с ID окон
 	PicDc = PicWnd->GetDC();
 	PicWnd->GetClientRect(&Pic);
+
+	Pic2dWnd = GetDlgItem(IDC_PICTURE_2D_DIAGRAM);			//связываем с ID окон
+	Pic2dDc = Pic2dWnd->GetDC();
+	Pic2dWnd->GetClientRect(&Pic2d);
 
 	zoom = 280.;
 	spin_x = -60.;
@@ -436,28 +442,28 @@ void CDirectionalDiagramDlg::DrawGL(vector<vector<complex<double>>> Wave)
 				glBegin(GL_TRIANGLE_STRIP);
 
 				//glColor3d((Wave[i][j].real() + max) / maxmin, 0.0f, 1 - (Wave[i][j].real() + max) / maxmin);
-				glColor3d(abs(1-(Wave[i][j].real() + max) / maxmin) * 2, 0.0f, (Wave[i][j].real() + max) / maxmin);
+				glColor3d(abs(1 - (Wave[i][j].real() + max) / maxmin) * 2, 0.0f, (Wave[i][j].real() + max) / maxmin);
 				glVertex3d((double)(j - (double)SPHERE_PLATFORM_SIZE / 2) * 2 / (double)SPHERE_PLATFORM_SIZE / mash, (double)(i - (double)SPHERE_PLATFORM_SIZE / 2)
 					* 2 / (double)SPHERE_PLATFORM_SIZE / mash, Wave[i][j].real() / 2 / absmax / mash);
 				//glColor3d((Wave[i + 1][j].real() + max) / maxmin, 0.0f, 1 - (Wave[i + 1][j].real() + max) / maxmin);
-				glColor3d(abs(1 - (Wave[i+1][j].real() + max) / maxmin) * 2, 0.0f, (Wave[i + 1][j].real() + max) / maxmin);
+				glColor3d(abs(1 - (Wave[i + 1][j].real() + max) / maxmin) * 2, 0.0f, (Wave[i + 1][j].real() + max) / maxmin);
 				glVertex3d((double)(j - (double)SPHERE_PLATFORM_SIZE / 2) * 2 / (double)SPHERE_PLATFORM_SIZE / mash, (double)(i + 1 - (double)SPHERE_PLATFORM_SIZE / 2)
 					* 2 / (double)SPHERE_PLATFORM_SIZE / mash, Wave[i + 1][j].real() / 2 / absmax / mash);
 				//glColor3d((Wave[i][j + 1].real() + max) / maxmin, 0.0f, 1 - (Wave[i][j + 1].real() + max) / maxmin);
-				glColor3d(abs(1 - (Wave[i][j+1].real() + max) / maxmin) * 2, 0.0f, (Wave[i][j + 1].real() + max) / maxmin);
+				glColor3d(abs(1 - (Wave[i][j + 1].real() + max) / maxmin) * 2, 0.0f, (Wave[i][j + 1].real() + max) / maxmin);
 				glVertex3d((double)(j + 1 - (double)SPHERE_PLATFORM_SIZE / 2) * 2 / (double)SPHERE_PLATFORM_SIZE / mash, (double)(i - (double)SPHERE_PLATFORM_SIZE / 2)
 					* 2 / (double)SPHERE_PLATFORM_SIZE / mash, Wave[i][j + 1].real() / 2 / absmax / mash);
 
 				//glColor3d((Wave[i + 1][j].real() + max) / maxmin, 0.0f, 1 - (Wave[i + 1][j].real() + max) / maxmin);
-				glColor3d(abs(1 - (Wave[i+1][j].real() + max) / maxmin) * 2, 0.0f, (Wave[i + 1][j].real() + max) / maxmin);
+				glColor3d(abs(1 - (Wave[i + 1][j].real() + max) / maxmin) * 2, 0.0f, (Wave[i + 1][j].real() + max) / maxmin);
 				glVertex3d((double)(j - (double)SPHERE_PLATFORM_SIZE / 2) * 2 / (double)SPHERE_PLATFORM_SIZE / mash, (double)(i + 1 - (double)SPHERE_PLATFORM_SIZE / 2)
 					* 2 / (double)SPHERE_PLATFORM_SIZE / mash, Wave[i + 1][j].real() / 2 / absmax / mash);
 				//glColor3d((Wave[i][j + 1].real() + max) / maxmin, 0.0f, 1 - (Wave[i][j + 1].real() + max) / maxmin);
-				glColor3d(abs(1 - (Wave[i][j+1].real() + max) / maxmin) * 2, 0.0f, (Wave[i][j + 1].real() + max) / maxmin);
+				glColor3d(abs(1 - (Wave[i][j + 1].real() + max) / maxmin) * 2, 0.0f, (Wave[i][j + 1].real() + max) / maxmin);
 				glVertex3d((double)(j + 1 - (double)SPHERE_PLATFORM_SIZE / 2) * 2 / (double)SPHERE_PLATFORM_SIZE / mash, (double)(i - (double)SPHERE_PLATFORM_SIZE / 2)
 					* 2 / (double)SPHERE_PLATFORM_SIZE / mash, Wave[i][j + 1].real() / 2 / absmax / mash);
 				//glColor3d((Wave[i + 1][j + 1].real() + max) / maxmin, 0.0f, 1 - (Wave[i + 1][j + 1].real() + max) / maxmin);
-				glColor3d(abs(1 - (Wave[i+1][j + 1].real() + max) / maxmin) * 2, 0.0f, (Wave[i + 1][j + 1].real() + max) / maxmin);
+				glColor3d(abs(1 - (Wave[i + 1][j + 1].real() + max) / maxmin) * 2, 0.0f, (Wave[i + 1][j + 1].real() + max) / maxmin);
 				glVertex3d((double)(j + 1 - (double)SPHERE_PLATFORM_SIZE / 2) * 2 / (double)SPHERE_PLATFORM_SIZE / mash, (double)(i + 1 - (double)SPHERE_PLATFORM_SIZE / 2)
 					* 2 / (double)SPHERE_PLATFORM_SIZE / mash, Wave[i + 1][j + 1].real() / 2 / absmax / mash);
 				glEnd();
@@ -968,12 +974,83 @@ void CDirectionalDiagramDlg::DrawImage(vector<vector<int>> vec, CDC* WinDc, CRec
 	delete MemDc;
 }
 
+int CDirectionalDiagramDlg::get_color_from_value(Pixel vec, double min_value, double max_value) {
+	double color_range = (max_value - min_value) / 256.;
+
+	vector<double> help;
+	for (int i = 0; i <= 255; i++) {
+		double limit_value = color_range * i + color_range;
+		if (vec.value <= limit_value) return i;
+	}
+}
+
+vector<vector<Pixel>> CDirectionalDiagramDlg::calculate_color_of_image(vector<vector<Pixel>> image_vec) {
+	if (!image_vec.empty()) {
+		vector<double> values;
+		for (int i = 0; i < image_vec.size(); i++) {
+			for (int j = 0; j < image_vec[i].size(); j++) {
+				values.push_back(image_vec[i][j].value);
+			}
+		}
+
+		double smallest_element = *min_element(values.begin(), values.end());
+		double largest_element = *max_element(values.begin(), values.end());
+
+		for (int i = 0; i < image_vec.size(); i++) {
+			for (int j = 0; j < image_vec[i].size(); j++) {
+				int color = get_color_from_value(image_vec[i][j], smallest_element, largest_element);
+				image_vec[i][j].color = color;
+			}
+		}
+		return image_vec;
+	}
+}
+
+void CDirectionalDiagramDlg::draw_image(vector<vector<Pixel>> image) {
+	if (!image.empty()) {
+		diagram_2d_xmin = 0;
+		diagram_2d_xmax = image[0].size();
+		diagram_2d_ymin = 0;
+		diagram_2d_ymax = image.size();
+
+		CBitmap bmp;
+		CDC* MemDc;
+		MemDc = new CDC;
+		MemDc->CreateCompatibleDC(Pic2dDc);
+
+		double window_signal_width = Pic2d.Width();
+		double window_signal_height = Pic2d.Height();
+		diagram_2d_xp = (window_signal_width / (diagram_2d_xmax - diagram_2d_xmin));
+		diagram_2d_yp = -(window_signal_height / (diagram_2d_ymax - diagram_2d_ymin));
+
+		bmp.CreateCompatibleBitmap(Pic2dDc, window_signal_width, window_signal_height);
+		CBitmap* pBmp = (CBitmap*)MemDc->SelectObject(&bmp);
+
+		MemDc->FillSolidRect(Pic2d, RGB(51, 76, 76));
+		for (int i = 0; i < image.size(); i++) {
+			for (int j = 0; j < image[i].size(); j++) {
+				COLORREF color = RGB(image[i][j].color, image[i][j].color, image[i][j].color);
+
+				double x_rect = 2;
+				double y_rect = 2;
+				MemDc->FillSolidRect(DIAGRAM_2D(i, j), (int)x_rect, (int)y_rect, color);
+			}
+		}
+		Pic2dDc->BitBlt(0, 0, window_signal_width, window_signal_height, MemDc, 0, 0, SRCCOPY);
+		delete MemDc;
+	}
+	else {
+		Pic2dDc->FillSolidRect(Pic2d, RGB(51, 76, 76));
+	}
+}
+
 void CDirectionalDiagramDlg::CreateSphere(vector<vector<double>>& sphere) {
 	if (sphere.size() != SPHERE_PLATFORM_SIZE)
 	{
 		sphere.resize(SPHERE_PLATFORM_SIZE);
 	}
-	double x = -SPHERE_PLATFORM_SIZE / 2, y = -SPHERE_PLATFORM_SIZE / 2;
+	double x = -SPHERE_PLATFORM_SIZE / 2;
+	double y = -SPHERE_PLATFORM_SIZE / 2;
 	for (int i = 0; i < sphere.size(); i++)
 	{
 		if (sphere[i].size() != SPHERE_PLATFORM_SIZE)
@@ -1028,6 +1105,12 @@ void CDirectionalDiagramDlg::OnBnClickedButtonCalculate()
 		}
 	}
 
+	// Расчет d для первых двух источников.
+	if (sources.size() > 1) {
+		EMIT_DISTANCE = sqrt((sources[0].x - sources[1].x) * (sources[0].x - sources[1].x) + (sources[0].y - sources[1].y) * (sources[0].y - sources[1].y));
+		UpdateData(FALSE);
+	}
+
 	// Создание сферы.
 	vector<vector<double>> sphere;
 	CreateSphere(sphere);
@@ -1063,6 +1146,19 @@ void CDirectionalDiagramDlg::OnBnClickedButtonCalculate()
 	}
 
 	DrawGL(vec_diagram);
+
+	// 2d.
+	vec_diagram_2d.clear();
+	vec_diagram_2d.resize(vec_diagram.size());
+	for (int i = 0; i < vec_diagram.size(); i++) {
+		vec_diagram_2d[i].resize(vec_diagram[i].size());
+		for (int j = 0; j < vec_diagram[i].size(); j++) {
+			vec_diagram_2d[i][j].value = sqrt(vec_diagram[i][j].real() * vec_diagram[i][j].real() + vec_diagram[i][j].imag() * vec_diagram[i][j].imag());
+		}
+	}
+
+	vec_diagram_2d = calculate_color_of_image(vec_diagram_2d);
+	draw_image(vec_diagram_2d);
 
 	int max_size_for_timer = 60;
 	if (SPHERE_PLATFORM_SIZE <= max_size_for_timer) {
