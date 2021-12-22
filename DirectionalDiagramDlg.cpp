@@ -1145,6 +1145,19 @@ void CDirectionalDiagramDlg::OnBnClickedButtonCalculate()
 		y++;
 	}
 
+	// Транспонирование.
+	vector<vector<complex<double>>> transpose_diagram;
+	transpose_diagram.resize(vec_diagram[0].size());
+	for (int i = 0; i < vec_diagram[0].size(); i++)
+	{
+		transpose_diagram[i].resize(vec_diagram.size());
+		for (int j = 0; j < vec_diagram.size(); j++)
+		{
+			transpose_diagram[i][j] = vec_diagram[j][i];
+		}
+	}
+	vec_diagram = transpose_diagram;
+
 	DrawGL(vec_diagram);
 
 	// 2d.
